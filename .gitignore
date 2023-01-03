@@ -1,0 +1,6 @@
+.env
+node_modules
+package-lock.json
+erc_test.js
+usd_abi.json
+solpkey.json
