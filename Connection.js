@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 async function connection() {
+    console.log("connect",process.env.DOCUMENT_DB_UID, process.env.DOCUMENT_DB_PASS)
     await mongoose.connect("mongodb://" +
     process.env.DOCUMENT_DB_UID
     + ":" +
