@@ -31,6 +31,7 @@ const sendMail = async function (req, res) {
     }).exec();
 
     if (user != null) {
+      console.log("mail",user)
       var pin = "0000";
 
       var pin2 = "0000";
@@ -109,7 +110,7 @@ const sendMail = async function (req, res) {
               if (err) {
                 res.json({ status: "fail", message: err });
               } else {
-                res.json({ status: "success", data: "mail_send" });
+                res.json({ status: "success", data: "mail_sendd" });
               }
             }
           );

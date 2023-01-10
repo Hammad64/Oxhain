@@ -22,39 +22,54 @@ const registerController = async (req, res) => {
 
   let newUser;
 
-
-  if (registerType == "email" && pin != '0') {
-    let checkEmailPin = await RegisterMail.findOne({
-      email: data,
-      pin: pin,
-    }).exec();
-
-    if (checkEmailPin == null) {
-      res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
-      return;
-    } else {
-      RegisterMail.findOneAndUpdate(
-        { email: data },
-        { status: "1" },
-        function (err, room) {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("pin status updated");
+  if (registerType == "email" && pin != "0") {
+    const checkEmail = data.includes("@");
+    if (checkEmail == true) {
+      let checkEmailPin = await RegisterMail.findOne({
+        email: data,
+        pin: pin,
+      }).exec();
+      console.log("checkEmailPin in register", checkEmailPin);
+      if (checkEmailPin == null) {
+        res.json({
+          status: "fail",
+          message: "pin_not_match",
+          showableMessage: "Pin not match",
+        });
+        return;
+      } else {
+        RegisterMail.findOneAndUpdate(
+          { email: data },
+          { status: "1" },
+          function (err, room) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log("pin status updated");
+            }
           }
-        }
-      );
+        );
+      }
+    } else {
+      res.json({
+        status: "fail",
+        message: "Invalid Email",
+      });
     }
   }
 
-  if (registerType == "phone" && pin !== '0') {
+  if (registerType == "phone" && pin !== "0") {
     let checkPhonePin = await RegisterSMS.findOne({
-      phone: data,
+      phone_number: data,
       pin: pin,
     }).exec();
-
+    console.log("checkPhonePin", checkPhonePin);
     if (checkPhonePin == null) {
-      res.json({ status: "fail", message: "pin_not_match", showableMessage: "Pin not match" });
+      res.json({
+        status: "fail",
+        message: "pin_not_match",
+        showableMessage: "Pin not match",
+      });
       return;
     } else {
       RegisterSMS.findOneAndUpdate(
@@ -81,7 +96,7 @@ const registerController = async (req, res) => {
       let phoneC = await User.findOne({
         phone_number: req.body.data,
       }).exec();
-      console.log(phoneC);
+      console.log(phoneC, "phone is found");
       if (phoneC != null) {
         phoneUnique = "false";
       }
@@ -90,7 +105,7 @@ const registerController = async (req, res) => {
 
   async function register() {
     if (emailUnique == "true" && phoneUnique == "true") {
-      if (registerType == "email") {
+      if (registerType == "email" && checkEmail == true) {
         newUser = new User({
           email: data,
           password: utilities.hashData(req.body.password),
@@ -99,16 +114,14 @@ const registerController = async (req, res) => {
         });
       } else {
         newUser = new User({
-          country_code: "90",
+          country_code: req.body.country_code,
           phone_number: req.body.data,
           password: utilities.hashData(req.body.password),
           api_key_result: req.body.api_key,
           status: 1,
         });
       }
-      console.log("Bura 1");
       let usr = await newUser.save();
-      console.log("Bura 2");
       if (refStatus == "yes") {
         let user = await UserRef.findOne({ refCode: reffer }).exec();
 
@@ -119,7 +132,11 @@ const registerController = async (req, res) => {
           });
           newReferral.save();
         } else {
-          res.json({ status: "fail", message: "referral_not_found", showableMessage: "Referral not found" });
+          res.json({
+            status: "fail",
+            message: "referral_not_found",
+            showableMessage: "Referral not found",
+          });
         }
       }
       var regUserId = usr._id;
